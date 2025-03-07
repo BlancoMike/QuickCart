@@ -11,49 +11,56 @@ export async function POST(req) {
 
     // Get data from the Make.com webhook
     const data = await req.json();
+    console.log("Received data:", data);
 
     // Destructure the event and user data from the webhook payload
-    const { type, user } = data; // Adjust based on the Make.com webhook structure
+    const { event, data: user } = data; // Adjust based on the Make.com webhook structure
+    console.log("Event type:", event);
+    console.log("User data:", user);
 
     // Validate incoming data
-    if (!type || !user || !user.id || !user.email) {
+    if (!event || !user || !user.id || !user.email) {
+      console.error("Invalid payload:", data);
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
     // Handle user creation, update, or deletion based on event type
-    if (type === "user.created") {
+    if (event === "clerk/user.created") {
       // Create a new user in the database
       await User.create({
         _id: user.id,
-        name: user.fullName,
+        name: user.name,
         email: user.email,
         imageUrl: user.imageUrl,
         cartItems: user.cartItems || [], // Assuming the cartItems field exists
       });
-    } else if (type === "user.updated") {
+    } else if (event === "clerk/user.updated") {
       // Validate user ID
       if (!isValidObjectId(user.id)) {
+        console.error("Invalid user ID:", user.id);
         return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
       }
       // Update an existing user in the database
       await User.findByIdAndUpdate(
         user.id,
         {
-          name: user.fullName,
+          name: user.name,
           email: user.email,
           imageUrl: user.imageUrl,
           cartItems: user.cartItems,
         },
         { new: true }
       );
-    } else if (type === "user.deleted") {
+    } else if (event === "clerk/user.deleted") {
       // Validate user ID
       if (!isValidObjectId(user.id)) {
+        console.error("Invalid user ID:", user.id);
         return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
       }
       // Delete the user from the database
       await User.findByIdAndDelete(user.id);
     } else {
+      console.error("Invalid event type:", event);
       return NextResponse.json(
         { message: "Invalid event type" },
         { status: 400 }
@@ -85,9 +92,11 @@ export async function PUT(req) {
 
     // Get the updated user data from the request body
     const userData = await req.json();
+    console.log("Received PUT data:", userData);
 
     // Validate user ID
     if (!isValidObjectId(userData.id)) {
+      console.error("Invalid user ID:", userData.id);
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
