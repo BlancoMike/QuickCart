@@ -8,18 +8,15 @@ if (!cached) {
 }
 
 async function connectDB() {
-  // If a connection already exists, return it
   if (cached.conn) {
     return cached.conn;
   }
 
-  // If no connection exists, create a new one
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false, // Disable Mongoose buffering
+      bufferCommands: false,
     };
 
-    // Create a connection promise
     cached.promise = mongoose
       .connect(`${process.env.MONGODB_URI}/quickcart`, opts)
       .then((mongoose) => {
@@ -32,11 +29,10 @@ async function connectDB() {
       });
   }
 
-  // Wait for the connection promise to resolve
   try {
     cached.conn = await cached.promise;
   } catch (err) {
-    cached.promise = null; // Reset the promise on error
+    cached.promise = null;
     throw err;
   }
 

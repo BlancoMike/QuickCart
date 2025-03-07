@@ -1,18 +1,16 @@
 import mongoose from "mongoose";
 
-// Define the user schema
 const userSchema = new mongoose.Schema(
   {
-    _id: { type: String, required: true }, // Use "String" instead of "string"
+    _id: { type: String, required: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     imageUrl: { type: String, required: true },
-    cartItems: { type: Array, default: [] }, // Use "Array" instead of "Object"
+    cartItems: { type: Array, default: [] },
   },
-  { minimize: false } // Optional: Only include if you need to store empty objects
+  { minimize: false }
 );
 
-// Check for existing model to avoid OverwriteModelError
 const User = mongoose.models.user || mongoose.model("user", userSchema);
 
 export default User;
